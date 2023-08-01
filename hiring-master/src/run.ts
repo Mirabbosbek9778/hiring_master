@@ -1,29 +1,21 @@
-import ITask from './Task';
+import { IExecutor } from "./Executor";
+import ITask from "./Task";
 
-export default async function run(queue: Iterable<ITask>, maxThreads = 0): Promise<void> {
-  const targetIdMap: Map<number, ITask[]> = new Map();
+export default async function run(
+  executor: IExecutor,
+  queue: AsyncIterable<ITask>,
+  maxThreads = 0
+) {
+  maxThreads = Math.max(0, maxThreads);
 
-  const processTask = async (task: ITask) => {
-    const targetIdTasks = targetIdMap.get(task.targetId) || [];
-    if (targetIdTasks.length > 0) {
-      await targetIdTasks[targetIdTasks.length - 1];
-    }
-    targetIdTasks.push(task);
-    targetIdMap.set(task.targetId, targetIdTasks);
-
-    // await executor.executeTask(task);
-
-    if (targetIdTasks.length > 0 && targetIdTasks[0] === task) {
-      targetIdTasks.shift();
-    }
-  };
+  const processTask = async (task: ITask) => {};
 
   const processQueue = async () => {
-    const queueIterator = queue[Symbol.iterator]();
+    const queueIterator = queue[Symbol.asyncIterator]();
     let activeThreads = 0;
 
     const processNextTask = async () => {
-      const nextTask = queueIterator.next();
+      const nextTask = await queueIterator.next();
       if (!nextTask.done) {
         const task = nextTask.value;
         activeThreads++;
@@ -41,7 +33,7 @@ export default async function run(queue: Iterable<ITask>, maxThreads = 0): Promi
     };
 
     while (activeThreads < maxThreads || maxThreads === 0) {
-      processNextTask();
+      await processNextTask();
       if (activeThreads === 0) {
         break;
       }
@@ -51,5 +43,3 @@ export default async function run(queue: Iterable<ITask>, maxThreads = 0): Promi
 
   await processQueue();
 }
-
-export { run };
