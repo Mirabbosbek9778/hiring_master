@@ -1,11 +1,9 @@
-import Task from "./Task";
-import Executor, { IExecutor } from "./Executor";
+import ITask from './Task';
 
-async function run(queue: Iterable<Task>, maxThreads = 0): Promise<void> {
-  const executor: IExecutor = new Executor();
-  const targetIdMap: Map<number, Task[]> = new Map();
+export default async function run(queue: Iterable<ITask>, maxThreads = 0): Promise<void> {
+  const targetIdMap: Map<number, ITask[]> = new Map();
 
-  const processTask = async (task: Task) => {
+  const processTask = async (task: ITask) => {
     const targetIdTasks = targetIdMap.get(task.targetId) || [];
     if (targetIdTasks.length > 0) {
       await targetIdTasks[targetIdTasks.length - 1];
@@ -13,7 +11,7 @@ async function run(queue: Iterable<Task>, maxThreads = 0): Promise<void> {
     targetIdTasks.push(task);
     targetIdMap.set(task.targetId, targetIdTasks);
 
-    await executor.executeTask(task);
+    // await executor.executeTask(task);
 
     if (targetIdTasks.length > 0 && targetIdTasks[0] === task) {
       targetIdTasks.shift();
