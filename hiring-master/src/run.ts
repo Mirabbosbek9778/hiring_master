@@ -1,5 +1,5 @@
-import { Task } from "./Task";
-import { Executor, IExecutor } from "./Executor";
+import Task from "./Task";
+import Executor, { IExecutor } from "./Executor";
 
 async function run(queue: Iterable<Task>, maxThreads = 0): Promise<void> {
   const executor: IExecutor = new Executor();
@@ -8,7 +8,7 @@ async function run(queue: Iterable<Task>, maxThreads = 0): Promise<void> {
   const processTask = async (task: Task) => {
     const targetIdTasks = targetIdMap.get(task.targetId) || [];
     if (targetIdTasks.length > 0) {
-      await targetIdTasks[targetIdTasks.length - 1].executionPromise;
+      await targetIdTasks[targetIdTasks.length - 1];
     }
     targetIdTasks.push(task);
     targetIdMap.set(task.targetId, targetIdTasks);

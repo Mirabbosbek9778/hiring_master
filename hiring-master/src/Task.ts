@@ -1,14 +1,17 @@
-import Executor from "../src/Executor";
+import Executor from "./Executor";
 
-interface Task {
+export default interface Task {
   targetId: number;
   action: ActionType;
+  _onExecute?(): void;
+  _onComplete?(): void;
 }
 
 type ActionType = "init" | "prepare" | "work" | "finalize" | "cleanup";
 
 async function run(queue: Iterable<Task>, maxThreads = 0): Promise<void> {
   if (maxThreads === 0) {
+    
     const executor = new Executor();
     const promises = Array.from(queue, (task) => executor.executeTask(task));
     await Promise.all(promises);
